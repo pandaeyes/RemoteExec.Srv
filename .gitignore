@@ -1,0 +1,6 @@
+*.class
+bin/*
+bin/**/*.class
+Thumbs.db
+.settings/
+.settings/*
