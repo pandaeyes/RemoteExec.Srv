@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <port value="9123"/>
+    <users>
+        <user group="server" name="hyq" signature="fdsfdsfhyq"/>
+        <user group="admin" name="hyq2" signature="fdsfdsfhyq"/>
+        <user group="client" name="hyq3" signature="fdsfdsfhyq"/>
+    </users>
+    <commands>
+        <cmd key="server_pull11" desc="更新服务端代码" groups="admin,server" dir="/data/mhfx.develop/server">
+            git pull
+        </cmd>
+        <cmd key="client_pull22" desc="更新客户代码" groups="admin,client" dir="/data/mhfx.develop/client">
+            git pull
+        </cmd>
+        <cmd key="client_pull33" desc="追踪日志" groups="admin,server" dir="/data/mhfx.develop/client">
+            tail -f screenlog.0
+        </cmd>
+    </commands>
+</config>

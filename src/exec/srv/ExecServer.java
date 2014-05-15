@@ -20,6 +20,7 @@ public class ExecServer {
 
 	public static void main(String [] args) {
 		try {
+			int port = ExecService.getInstance().getPort();
 			SocketAcceptor acceptor = new NioSocketAcceptor();
 			SocketSessionConfig config = acceptor.getSessionConfig();
 			config.setReadBufferSize(5120);
@@ -27,11 +28,10 @@ public class ExecServer {
 			config.setMaxReadBufferSize(5120 * 2);
 			config.setIdleTime(IdleStatus.BOTH_IDLE, 120);
 			config.setReuseAddress(true);
-			
 			acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new SmsCodecFactory(Charset.forName(("UTF-8"))))); 
-			acceptor.setHandler(new MyIoHandler());
-			acceptor.bind(new InetSocketAddress(9123));
-			log.info("Server Started!");
+			acceptor.setHandler(new ExecHandler());
+			acceptor.bind(new InetSocketAddress(port));
+			log.info("Server Started! " + port);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 
