@@ -1,4 +1,5 @@
 *.class
+*.bat
 bin/*
 bin/**/*.class
 Thumbs.db
