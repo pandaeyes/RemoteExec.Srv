@@ -62,6 +62,7 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine(line);
 	        	session.write(sms);
+	        	System.out.println(line);
 	        }
 	        int exitVal = proc.waitFor();
 	        while ((line = brerr.readLine()) != null){
@@ -69,6 +70,7 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("ERROR:" + line);
 	        	session.write(sms);
+	        	System.out.println(line);
 	        }
 	        SmsObjectS104 sms104 = new SmsObjectS104();
 	        if(exitVal == 0){
@@ -76,11 +78,13 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行成功");
 	        	session.write(sms);
+	        	System.out.println("执行成功");
 	        }else{
 	        	sms104.setResult(0);
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行失败");
 	        	session.write(sms);
+	        	System.out.println("执行失败");
 	        } 
 	        session.write(sms104);
 		} catch(Exception e) {

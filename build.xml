@@ -41,13 +41,13 @@
 		<echo file="${basedir}/dist/server.bat" message="java -jar server.jar" />
 		<echo file="${basedir}/dist/server.sh">
 #!/bin/bash
-cat &gt; cmd_executor.sh &lt;&lt;EOF
+cat &gt; executor.sh &lt;&lt;EOF
 #!/bin/bash
 ulimit -SHn 102400
 java -jar server.jar
 EOF
-chmod +x cmd_executor.sh
-screen -dmSL remoteexec.srv -s ./cmd_executor.sh
+chmod +x executor.sh
+screen -dmSL remote.executor -s ./executor.sh
 		</echo>
 		<copy todir="${basedir}/dist">
 			<fileset dir="${basedir}/../RemoteExec.Common/lib">
