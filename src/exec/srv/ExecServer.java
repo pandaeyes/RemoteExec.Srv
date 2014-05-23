@@ -23,9 +23,9 @@ public class ExecServer {
 			int port = ExecService.getInstance().getPort();
 			SocketAcceptor acceptor = new NioSocketAcceptor();
 			SocketSessionConfig config = acceptor.getSessionConfig();
-			config.setReadBufferSize(5120);
+			config.setReadBufferSize(2048*1000);
 			config.setMinReadBufferSize(1024);
-			config.setMaxReadBufferSize(5120 * 2);
+			config.setMaxReadBufferSize(5120 * 20);
 			config.setIdleTime(IdleStatus.BOTH_IDLE, 120);
 			config.setReuseAddress(true);
 			acceptor.getFilterChain().addLast("codec", new ProtocolCodecFilter(new SmsCodecFactory(Charset.forName(("UTF-8"))))); 

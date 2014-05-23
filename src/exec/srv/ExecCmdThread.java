@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.mina.core.session.IoSession;
@@ -17,11 +19,13 @@ import exec.common.ISmsObject;
 import exec.proto.SmsObjectC102;
 import exec.proto.SmsObjectC104;
 import exec.proto.SmsObjectS102;
+import exec.proto.SmsObjectS104;
 
 public class ExecCmdThread extends Thread {
 	
 	private ExecUser user = null;
 	private ISmsObject isms = null;
+	private HashMap<String, String> onselfMap = new HashMap<String, String>();
 	
 	public ExecCmdThread(ExecUser user, ISmsObject sms) {
 		this.isms = sms;
@@ -66,20 +70,28 @@ public class ExecCmdThread extends Thread {
 	        	sms.setLine("ERROR:" + line);
 	        	session.write(sms);
 	        }
+	        SmsObjectS104 sms104 = new SmsObjectS104();
 	        if(exitVal == 0){
+	        	sms104.setResult(1);
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行成功");
 	        	session.write(sms);
 	        }else{
+	        	sms104.setResult(0);
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行失败");
 	        	session.write(sms);
 	        } 
+	        session.write(sms104);
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			ExecService.getInstance().removeThread(user.getName());
 		}
+	}
+	
+	public HashMap<String, String> getOneselfMap() {
+		return onselfMap;
 	}
 	
 	private void makeScript(String fileName) {
@@ -109,6 +121,9 @@ public class ExecCmdThread extends Thread {
 			for (String key : keyList) {
 				Command cmd = getCommandByKey(cmdList, key);
 				if (cmd != null) {
+					if (cmd.isOneself()) {
+						onselfMap.put(cmd.getCmd(), user.getName());
+					}
 					confBf.write("\r\n");
 					if (cmd.getDir().trim().length() > 0)
 						confBf.write("cd /d " + cmd.getDir() + "\r\n");
@@ -120,11 +135,15 @@ public class ExecCmdThread extends Thread {
 			String key = sms104.getCmdkey();
 			List<Command> cmdList = ExecService.getInstance().getCommandByUser(user);
 			Command cmd = getCommandByKey(cmdList, key);
-			if (cmd != null) {
+			String param = sms104.getParam();
+			if (cmd != null && param.matches("(\\w*_*)*")) {
+				if (cmd.isOneself()) {
+					onselfMap.put(cmd.getCmd(), user.getName());
+				}
 				confBf.write("\r\n");
 				if (cmd.getDir().trim().length() > 0)
 					confBf.write("cd /d " + cmd.getDir() + "\r\n");
-				confBf.write(replaceParam(cmd.getCmd(), sms104.getParam()) + "\r\n");
+				confBf.write(replaceParam(cmd.getCmd(), param) + "\r\n");
 			}
 		}
 		confBf.write("echo finish\n");
@@ -145,6 +164,9 @@ public class ExecCmdThread extends Thread {
 			for (String key : keyList) {
 				Command cmd = getCommandByKey(cmdList, key);
 				if (cmd != null) {
+					if (cmd.isOneself()) {
+						onselfMap.put(cmd.getCmd(), user.getName());
+					}
 					confBf.write("\n");
 					if (cmd.getDir().trim().length() > 0)
 						confBf.write("cd " + cmd.getDir() + "\r\n");
@@ -156,11 +178,15 @@ public class ExecCmdThread extends Thread {
 			String key = sms104.getCmdkey();
 			List<Command> cmdList = ExecService.getInstance().getCommandByUser(user);
 			Command cmd = getCommandByKey(cmdList, key);
-			if (cmd != null) {
+			String param = sms104.getParam();
+			if (cmd != null && param.matches("(\\w*_*)*")) {
+				if (cmd.isOneself()) {
+					onselfMap.put(cmd.getCmd(), user.getName());
+				}
 				confBf.write("\n");
 				if (cmd.getDir().trim().length() > 0)
 					confBf.write("cd " + cmd.getDir() + "\r\n");
-				confBf.write(replaceParam(cmd.getCmd(), sms104.getParam()) + "\r\n");
+				confBf.write(replaceParam(cmd.getCmd(), param) + "\r\n");
 			}
 		}
 		confBf.write("echo finish\n");

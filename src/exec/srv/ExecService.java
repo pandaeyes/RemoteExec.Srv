@@ -37,7 +37,8 @@ public class ExecService {
 	
 	private static ExecService instance = null;
 	private HashMap<String, ExecUser> userMap = new HashMap<String, ExecUser>();
-	private HashMap<String, Thread> threadMap = new HashMap<String, Thread>();
+	private HashMap<String, ExecCmdThread> threadMap = new HashMap<String, ExecCmdThread>();
+	private String version = "test";
 	private int port = 0;
 	private int os = os_unix;
 	private Map<Class, Method> methodList = new HashMap<Class, Method>();
@@ -93,6 +94,9 @@ public class ExecService {
 			    	if (element.getNodeName().equals("port")) {
 			    		port = Integer.parseInt(element.getAttribute("value").trim());
 			    	}
+			    	if (element.getNodeName().equals("version")) {
+			    		version = element.getAttribute("value").trim();
+			    	}
 			    	if (element.getNodeName().equals("os")) {
 			    		String osstr = element.getAttribute("value").trim();
 			    		if ("win".equalsIgnoreCase(osstr)) {
@@ -134,6 +138,10 @@ public class ExecService {
 			    				command.setDesc(cmdEle.getAttribute("desc").trim());
 			    				command.setDir(cmdEle.getAttribute("dir").trim());
 			    				command.setCmd(cmdEle.getTextContent().trim());
+			    				String oneself = cmdEle.getAttribute("oneself");
+			    				if ("true".equals(oneself)) {
+			    					command.setOneself(true);
+			    				}
 			    				cmdList.add(command);
 			    			}
 			    		}
@@ -159,16 +167,24 @@ public class ExecService {
 	public ISmsObject handle(SmsObjectC100 obj) {
 		ExecUser user = userMap.get(obj.getName());
 		SmsObjectS100 s100 = new SmsObjectS100();
+		if (!version.equals(obj.getVersion())) {
+			s100.setSucc(0);
+			s100.setMsg("版本不一致，请更新版本!");
+			obj.getSession().write(s100);
+			return null;
+		}
 		if (user != null && user.getSignature().equals(obj.getSignature())) {
 			obj.getSession().setAttribute("verification", true);
 			obj.getSession().setAttribute("execUser", user);
 			s100.setSucc(1);
+			s100.setMsg("登录成功");
 			obj.getSession().write(s100);
 			SmsObjectS101 s101 = new SmsObjectS101();
 			s101.setCmdList(getCommandByUser(user));
 			obj.getSession().write(s101);
 		} else {
 			s100.setSucc(0);
+			s100.setMsg("验收失败，你可能没有权限!");
 			obj.getSession().write(s100);
 		}
 		return null;
@@ -178,9 +194,16 @@ public class ExecService {
 		ExecUser user = (ExecUser)sms.getSession().getAttribute("execUser");
 		if (user != null) {
 			if (threadMap.get(user.getName()) == null) {
-				ExecCmdThread thread = new ExecCmdThread(user, sms);
-				thread.start();
-				threadMap.put(user.getName(), thread);
+				String oneselfMsg = checkOneself(sms);
+				if (oneselfMsg == null) {
+					ExecCmdThread thread = new ExecCmdThread(user, sms);
+					thread.start();
+					threadMap.put(user.getName(), thread);
+				} else {
+					SmsObjectS103 sms103 = new SmsObjectS103();
+					sms103.setLine("存在独占任务，请稍后再试:" + oneselfMsg);
+					sms.getSession().write(sms103);
+				}
 			} else {
 				SmsObjectS103 sms103 = new SmsObjectS103();
 				sms103.setLine("你已经有任务在执行了");
@@ -198,9 +221,16 @@ public class ExecService {
 		ExecUser user = (ExecUser)sms.getSession().getAttribute("execUser");
 		if (user != null) {
 			if (threadMap.get(user.getName()) == null) {
-				ExecCmdThread thread = new ExecCmdThread(user, sms);
-				thread.start();
-				threadMap.put(user.getName(), thread);
+				String oneselfMsg = checkOneself(sms);
+				if (oneselfMsg == null) {
+					ExecCmdThread thread = new ExecCmdThread(user, sms);
+					thread.start();
+					threadMap.put(user.getName(), thread);
+				} else {
+					SmsObjectS103 sms103 = new SmsObjectS103();
+					sms103.setLine("存在独占任务，请稍后再试:" + oneselfMsg);
+					sms.getSession().write(sms103);
+				}
 			} else {
 				SmsObjectS103 sms103 = new SmsObjectS103();
 				sms103.setLine("你已经有任务在执行了");
@@ -247,4 +277,22 @@ public class ExecService {
 		return list;
 	}
 	
+	public String checkOneself(SmsObjectC102 sms) {
+		List<String> cmdList = sms.getCmdList();
+		for (ExecCmdThread thread : threadMap.values()) {
+			for (String cmd : cmdList) {
+				if (thread.getOneselfMap().get(cmd) != null)
+					return "cmd:" + cmd + " user:"+ thread.getOneselfMap().get(cmd);
+			}
+		}
+		return null;
+	}
+	
+	public String checkOneself(SmsObjectC104 sms) {
+		for (ExecCmdThread thread : threadMap.values()) {
+			if (thread.getOneselfMap().get(sms.getCmdkey()) != null)
+				return "cmd:" + sms.getCmdkey() + " user:"+ thread.getOneselfMap().get(sms.getCmdkey());
+		}
+		return null;
+	}
 }
