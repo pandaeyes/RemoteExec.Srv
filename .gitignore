@@ -1,5 +1,8 @@
 *.class
 *.bat
+config.xml
+build/*
+dist/*
 bin/*
 bin/**/*.class
 Thumbs.db

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+    <version value="template"/>
+    <port value="8080"/>
+    <os value="unix"/>
+    <users>
+        <user group="server" name="hyq" signature="mypw"/>
+    </users>
+    <commands>
+        <cmd key="say hi" desc="模板" groups="server" username="hyq" dir="/data/dev" oneself="false">
+            echo "hello world!"
+        </cmd>
+    </commands>
+</config>

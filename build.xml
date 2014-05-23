@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project name="RemoteExec.Srv" default="dist">
+   <target name="clean">
+        <echo>==============</echo>
+        <echo> RemoteExec.Srv: clean </echo>
+        <echo>==============</echo>
+        <delete dir="${basedir}/dist" />
+        <delete dir="${basedir}/build" />
+    </target>
+	
+	<target name="init" depends="clean">
+        <echo>=============</echo>
+        <echo> RemoteExec.Srv: init </echo>
+        <echo>=============</echo>
+        <mkdir dir="${basedir}/dist" />
+        <mkdir dir="${basedir}/build" />
+        <mkdir dir="${basedir}/build/classes" />
+    </target>
+	
+    <target name="compile" depends="init">
+        <echo>================</echo>
+        <echo> RemoteExec.Srv: compile </echo>
+        <echo>================</echo>
+        <javac debug="on" destdir="${basedir}/build/classes" includeantruntime="on">
+        	<src path="${basedir}/src"/>
+        	<src path="${basedir}/../RemoteExec.Common/src"/>
+            <classpath>
+                <fileset dir="${basedir}/../RemoteExec.Common/lib"/>
+            </classpath>
+        </javac>
+    </target>
+	
+	<target name="dist" depends="compile">
+		<echo>=============</echo>
+        <echo> RemoteExec: dist </echo>
+        <echo>=============</echo>
+        <jar destfile="${basedir}/build/server.jar" manifest="${basedir}/MANIFEST.MF">
+            <fileset dir="${basedir}/build/classes">
+            </fileset>
+        </jar>
+		<copy todir="${basedir}/dist">
+			<fileset dir="${basedir}/../RemoteExec.Common/lib">
+                <include name="*.jar" />
+            </fileset>
+			<fileset file="${basedir}/build/server.jar" />
+		</copy>
+    </target>
+</project>
