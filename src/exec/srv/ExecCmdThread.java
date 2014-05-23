@@ -153,10 +153,10 @@ public class ExecCmdThread extends Thread {
 	
 	private void makeUnixScript(String fileName) throws IOException {
 		File file = new File(fileName);
-		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file),"GB2312");
+		OutputStreamWriter write = new OutputStreamWriter(new FileOutputStream(file),"UTF-8");
 		BufferedWriter confBf =new BufferedWriter(write);
 		confBf.write("#/bin/bash\n");
-		confBf.write("echo 正在执行\r\n");
+		confBf.write("echo 正在执行:\n");
 		if (isms instanceof SmsObjectC102) {
 			SmsObjectC102 sms102 = (SmsObjectC102)isms;
 			List<String> keyList = sms102.getCmdList();
@@ -169,8 +169,8 @@ public class ExecCmdThread extends Thread {
 					}
 					confBf.write("\n");
 					if (cmd.getDir().trim().length() > 0)
-						confBf.write("cd " + cmd.getDir() + "\r\n");
-					confBf.write(cmd.getCmd() + "\r\n");
+						confBf.write("cd " + cmd.getDir() + "\n");
+					confBf.write(cmd.getCmd() + "\n");
 				}
 			}
 		} else if(isms instanceof SmsObjectC104) {
@@ -185,8 +185,8 @@ public class ExecCmdThread extends Thread {
 				}
 				confBf.write("\n");
 				if (cmd.getDir().trim().length() > 0)
-					confBf.write("cd " + cmd.getDir() + "\r\n");
-				confBf.write(replaceParam(cmd.getCmd(), param) + "\r\n");
+					confBf.write("cd " + cmd.getDir() + "\n");
+				confBf.write(replaceParam(cmd.getCmd(), param) + "\n");
 			}
 		}
 		confBf.write("echo finish\n");

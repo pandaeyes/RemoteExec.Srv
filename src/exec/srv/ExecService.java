@@ -171,6 +171,7 @@ public class ExecService {
 			s100.setSucc(0);
 			s100.setMsg("版本不一致，请更新版本!");
 			obj.getSession().write(s100);
+			log.info(user.getName() + "登录失败[版本不一致]");
 			return null;
 		}
 		if (user != null && user.getSignature().equals(obj.getSignature())) {
@@ -182,16 +183,24 @@ public class ExecService {
 			SmsObjectS101 s101 = new SmsObjectS101();
 			s101.setCmdList(getCommandByUser(user));
 			obj.getSession().write(s101);
+			log.info(user.getName() + "登录成功");
 		} else {
 			s100.setSucc(0);
 			s100.setMsg("验收失败，你可能没有权限!");
 			obj.getSession().write(s100);
+			log.info(user.getName() + "登录失败[验收失败]");
 		}
 		return null;
 	}
 	
 	public ISmsObject handle(SmsObjectC102 sms) {
 		ExecUser user = (ExecUser)sms.getSession().getAttribute("execUser");
+		List<String> list = sms.getCmdList();
+		String cmds = "";
+		for (String cmd : list) {
+			cmds += " [" + cmd + "]";
+		}
+		log.info(user.getName() + "执行命令:" + cmds);
 		if (user != null) {
 			if (threadMap.get(user.getName()) == null) {
 				String oneselfMsg = checkOneself(sms);
@@ -219,6 +228,7 @@ public class ExecService {
 	
 	public ISmsObject handle(SmsObjectC104 sms) {
 		ExecUser user = (ExecUser)sms.getSession().getAttribute("execUser");
+		log.info(user.getName() + "执行命令:" + sms.getCmdkey());
 		if (user != null) {
 			if (threadMap.get(user.getName()) == null) {
 				String oneselfMsg = checkOneself(sms);

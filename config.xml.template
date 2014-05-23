@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <config>
-    <version value="template"/>
+    <version value="20140523"/>
     <port value="8080"/>
     <os value="unix"/>
     <users>
