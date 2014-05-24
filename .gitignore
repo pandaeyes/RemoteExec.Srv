@@ -1,5 +1,6 @@
 *.class
 *.bat
+remote.exec.log
 config.xml
 build/*
 dist/*

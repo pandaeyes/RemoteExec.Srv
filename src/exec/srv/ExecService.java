@@ -37,6 +37,7 @@ public class ExecService {
 	
 	private static ExecService instance = null;
 	private HashMap<String, ExecUser> userMap = new HashMap<String, ExecUser>();
+	private HashMap<String, ExecUser> onlineMap = new HashMap<String, ExecUser>();
 	private HashMap<String, ExecCmdThread> threadMap = new HashMap<String, ExecCmdThread>();
 	private String version = "test";
 	private int port = 0;
@@ -161,6 +162,7 @@ public class ExecService {
 				running.interrupt();
 			}
 			threadMap.remove(user.getName());
+			onlineMap.remove(user.getName());
 		}
 	}
 
@@ -174,6 +176,13 @@ public class ExecService {
 			log.info(user.getName() + "登录失败[版本不一致]");
 			return null;
 		}
+		if (onlineMap.get(obj.getName()) != null) {
+			s100.setSucc(0);
+			s100.setMsg("你已经登录，不可以重复登录!");
+			obj.getSession().write(s100);
+			log.info(user.getName() + "登录失败[重复登录]");
+			return null;
+		}
 		if (user != null && user.getSignature().equals(obj.getSignature())) {
 			obj.getSession().setAttribute("verification", true);
 			obj.getSession().setAttribute("execUser", user);
@@ -183,7 +192,8 @@ public class ExecService {
 			SmsObjectS101 s101 = new SmsObjectS101();
 			s101.setCmdList(getCommandByUser(user));
 			obj.getSession().write(s101);
-			log.info(user.getName() + "登录成功");
+			onlineMap.put(user.getName(), user);
+			log.info(user.getName() + "登录成功[" + obj.getSession().getId() + "]");
 		} else {
 			s100.setSucc(0);
 			s100.setMsg("验收失败，你可能没有权限!");

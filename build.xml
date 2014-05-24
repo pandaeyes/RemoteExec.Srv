@@ -37,6 +37,7 @@
         <jar destfile="${basedir}/build/server.jar" manifest="${basedir}/MANIFEST.MF">
             <fileset dir="${basedir}/build/classes">
             </fileset>
+        	<fileset file="${basedir}/../RemoteExec.Common/src/log4j.properties" />
         </jar>
 		<echo file="${basedir}/dist/server.bat" message="java -jar server.jar" />
 		<echo file="${basedir}/dist/server.sh">

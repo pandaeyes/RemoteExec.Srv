@@ -1,8 +1,10 @@
 package exec.srv;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.util.Properties;
 
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
@@ -19,11 +21,13 @@ import exec.common.SmsCodecFactory;
 public class ExecServer {
 	
 	private final static Logger log = LoggerFactory.getLogger(ExecServer.class);
+	
+	private static SocketAcceptor acceptor;
 
 	public static void main(String [] args) {
 		try {
 			int port = ExecService.getInstance().getPort();
-			SocketAcceptor acceptor = new NioSocketAcceptor();
+			acceptor = new NioSocketAcceptor();
 			SocketSessionConfig config = acceptor.getSessionConfig();
 			config.setReadBufferSize(2048*1000);
 			config.setMinReadBufferSize(1024);
@@ -35,7 +39,14 @@ public class ExecServer {
 			acceptor.getFilterChain().addLast("executor", new ExecutorFilter(new OrderedThreadPoolExecutor(16)));
 			acceptor.setHandler(new ExecHandler());
 			acceptor.bind(new InetSocketAddress(port));
+			
 			log.info("Server Started! " + port);
+			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+				public void run() {
+					acceptor.unbind();
+					acceptor.dispose();
+				}
+		    }));
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 

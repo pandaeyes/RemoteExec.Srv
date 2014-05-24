@@ -23,6 +23,7 @@ public class ExecHandler extends IoHandlerAdapter {
 		if (proto != 100 && session.getAttribute("verification") == null) {
 			SmsObjectS100 sms200 = new SmsObjectS100();
 			session.write(sms200);
+			session.close(false);
 			return;
 		}
 		ISmsObject returnVal = ExecService.getInstance().handle(sms);
@@ -40,6 +41,10 @@ public class ExecHandler extends IoHandlerAdapter {
     }
 	
     public void sessionClosed(IoSession session) throws Exception {
+    	if (session.getAttribute("execUser") != null && session.getAttribute("execUser") instanceof ExecUser) {
+    		ExecUser user = (ExecUser)session.getAttribute("execUser");
+    		log.info(user.getName() + "断开链接");
+    	}
     	ExecService.getInstance().sessionClosed(session);
     }
 }

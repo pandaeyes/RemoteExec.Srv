@@ -8,11 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
 import org.apache.mina.core.session.IoSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import exec.common.Command;
 import exec.common.ISmsObject;
@@ -22,6 +23,8 @@ import exec.proto.SmsObjectS102;
 import exec.proto.SmsObjectS104;
 
 public class ExecCmdThread extends Thread {
+	
+	private final static Logger log = LoggerFactory.getLogger(ExecCmdThread.class);
 	
 	private ExecUser user = null;
 	private ISmsObject isms = null;
@@ -62,7 +65,7 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine(line);
 	        	session.write(sms);
-	        	System.out.println(line);
+	        	log.info(line);
 	        }
 	        int exitVal = proc.waitFor();
 	        while ((line = brerr.readLine()) != null){
@@ -70,7 +73,7 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("ERROR:" + line);
 	        	session.write(sms);
-	        	System.out.println(line);
+	        	log.info(line);
 	        }
 	        SmsObjectS104 sms104 = new SmsObjectS104();
 	        if(exitVal == 0){
@@ -78,13 +81,13 @@ public class ExecCmdThread extends Thread {
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行成功");
 	        	session.write(sms);
-	        	System.out.println("执行成功");
+	        	log.info("执行成功");
 	        }else{
 	        	sms104.setResult(0);
 	        	sms = new SmsObjectS102();
 	        	sms.setLine("执行失败");
 	        	session.write(sms);
-	        	System.out.println("执行失败");
+	        	log.info("执行失败");
 	        } 
 	        session.write(sms104);
 		} catch(Exception e) {
