@@ -21,8 +21,10 @@ public class ExecHandler extends IoHandlerAdapter {
 		int proto = sms.getProto();
 		log.info("session[" + session.getId() + "]received proto [" + proto + "]");
 		if (proto != 100 && session.getAttribute("verification") == null) {
-			SmsObjectS100 sms200 = new SmsObjectS100();
-			session.write(sms200);
+			SmsObjectS100 sms100 = new SmsObjectS100();
+			sms100.setSucc(0);
+			sms100.setMsg("你还没有登录");
+			session.write(sms100);
 			session.close(false);
 			return;
 		}

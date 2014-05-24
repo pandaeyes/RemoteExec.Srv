@@ -25,9 +25,11 @@ import exec.common.ISmsObject;
 import exec.proto.SmsObjectC100;
 import exec.proto.SmsObjectC102;
 import exec.proto.SmsObjectC104;
+import exec.proto.SmsObjectC105;
 import exec.proto.SmsObjectS100;
 import exec.proto.SmsObjectS101;
 import exec.proto.SmsObjectS103;
+import exec.proto.SmsObjectS105;
 
 public class ExecService {
 	
@@ -37,6 +39,8 @@ public class ExecService {
 	
 	private static ExecService instance = null;
 	private HashMap<String, ExecUser> userMap = new HashMap<String, ExecUser>();
+	private List<Command> cmdList = new ArrayList<Command>();
+	
 	private HashMap<String, ExecUser> onlineMap = new HashMap<String, ExecUser>();
 	private HashMap<String, ExecCmdThread> threadMap = new HashMap<String, ExecCmdThread>();
 	private String version = "test";
@@ -44,7 +48,6 @@ public class ExecService {
 	private int os = os_unix;
 	private Map<Class, Method> methodList = new HashMap<Class, Method>();
 	
-	private List<Command> cmdList = new ArrayList<Command>();
 	
 	private ExecService(){
 		Method [] Methods = this.getClass().getMethods();
@@ -157,9 +160,9 @@ public class ExecService {
 	public void sessionClosed(IoSession session) {
 		ExecUser user = (ExecUser)session.getAttribute("execUser");
 		if (user != null) {
-			Thread running = threadMap.get(user.getName());
+			ExecCmdThread running = threadMap.get(user.getName());
 			if (running != null) {
-				running.interrupt();
+				running.doStop();
 			}
 			threadMap.remove(user.getName());
 			onlineMap.remove(user.getName());
@@ -188,6 +191,11 @@ public class ExecService {
 			obj.getSession().setAttribute("execUser", user);
 			s100.setSucc(1);
 			s100.setMsg("登录成功");
+			if (isAdmin(user)) {
+				s100.setGroup(9);
+			} else {
+				s100.setGroup(1);
+			}
 			obj.getSession().write(s100);
 			SmsObjectS101 s101 = new SmsObjectS101();
 			s101.setCmdList(getCommandByUser(user));
@@ -264,6 +272,17 @@ public class ExecService {
 		return null;
 	}
 	
+	public ISmsObject handle(SmsObjectC105 sms) {
+		ExecUser user = (ExecUser)sms.getSession().getAttribute("execUser");
+		if (isAdmin(user)) {
+			initConfig();
+		}
+		SmsObjectS105 sms105 = new SmsObjectS105();
+		sms105.setSucc(1);
+		sms.getSession().write(sms105);
+		return null;
+	}
+	
 	public ISmsObject handle(ISmsObject obj) {
 		Class c = obj.getClass();
 		Method method = methodList.get(c);
@@ -314,5 +333,17 @@ public class ExecService {
 				return "cmd:" + sms.getCmdkey() + " user:"+ thread.getOneselfMap().get(sms.getCmdkey());
 		}
 		return null;
+	}
+	
+	public boolean isAdmin(ExecUser user) {
+		if (user == null)
+			return false;
+		if (user.getGroup() == null)
+			return false;
+		if (user.getGroup().indexOf("admin") != -1) {
+			return true;
+		} else {
+			return false;
+		}
 	}
 }

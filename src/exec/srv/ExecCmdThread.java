@@ -28,6 +28,7 @@ public class ExecCmdThread extends Thread {
 	
 	private ExecUser user = null;
 	private ISmsObject isms = null;
+	private Process proc = null;
 	private HashMap<String, String> onselfMap = new HashMap<String, String>();
 	
 	public ExecCmdThread(ExecUser user, ISmsObject sms) {
@@ -39,7 +40,7 @@ public class ExecCmdThread extends Thread {
 		try {
 			String fileName = "";
 			String charsetName = "UTF-8";
-			Process proc = null;
+			proc = null;
 			if (ExecService.getInstance().getOs() == ExecService.os_unix) {
 				fileName = "_remote_script_" + user.getName() + "_tmp.sh";
 				charsetName = "UTF-8";
@@ -88,13 +89,18 @@ public class ExecCmdThread extends Thread {
 	        	sms.setLine("执行失败");
 	        	session.write(sms);
 	        	log.info("执行失败");
-	        } 
+	        }
 	        session.write(sms104);
 		} catch(Exception e) {
 			e.printStackTrace();
 		} finally {
 			ExecService.getInstance().removeThread(user.getName());
 		}
+	}
+	
+	public void doStop() {
+		proc.destroy();
+		this.stop();
 	}
 	
 	public HashMap<String, String> getOneselfMap() {
