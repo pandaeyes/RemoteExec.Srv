@@ -4,7 +4,7 @@
     <port value="8080"/>
     <os value="unix"/>
     <users>
-        <user group="server" name="hyq" signature="mypw"/>
+        <user group="server" name="hyq" signature="mypw" admin="false"/>
     </users>
     <commands>
         <cmd key="say hi" desc="模板" groups="server" username="hyq" dir="/data/dev" oneself="false">

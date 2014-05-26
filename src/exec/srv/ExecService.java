@@ -122,6 +122,9 @@ public class ExecService {
 			    				user.setGroup(userEle.getAttribute("group").trim());
 			    				user.setName(userEle.getAttribute("name").trim());
 			    				user.setSignature(userEle.getAttribute("signature").trim());
+			    				if ("true".equals(userEle.getAttribute("admin"))) {
+			    					user.setAdmin(true);
+			    				}
 			    				userMap.put(user.getName(), user);
 			    			}
 			    		}
@@ -338,12 +341,6 @@ public class ExecService {
 	public boolean isAdmin(ExecUser user) {
 		if (user == null)
 			return false;
-		if (user.getGroup() == null)
-			return false;
-		if (user.getGroup().indexOf("admin") != -1) {
-			return true;
-		} else {
-			return false;
-		}
+		return user.isAdmin();
 	}
 }

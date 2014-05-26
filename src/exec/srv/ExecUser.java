@@ -5,6 +5,7 @@ public class ExecUser {
 	private String group = "";
 	private String name = "";
 	private String signature = "";
+	private boolean admin = false;
 	public String getGroup() {
 		return group;
 	}
@@ -22,5 +23,11 @@ public class ExecUser {
 	}
 	public void setSignature(String signature) {
 		this.signature = signature;
+	}
+	public boolean isAdmin() {
+		return admin;
+	}
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
 	}
 }
