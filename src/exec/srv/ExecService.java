@@ -42,6 +42,7 @@ public class ExecService {
 	private List<Command> cmdList = new ArrayList<Command>();
 	
 	private HashMap<String, ExecUser> onlineMap = new HashMap<String, ExecUser>();
+	private HashMap<String, IoSession> onlineSession = new HashMap<String, IoSession>();
 	private HashMap<String, ExecCmdThread> threadMap = new HashMap<String, ExecCmdThread>();
 	private String version = "test";
 	private int port = 0;
@@ -169,6 +170,7 @@ public class ExecService {
 			}
 			threadMap.remove(user.getName());
 			onlineMap.remove(user.getName());
+			onlineSession.remove(user.getName());
 		}
 	}
 
@@ -187,6 +189,15 @@ public class ExecService {
 			s100.setMsg("你已经登录，不可以重复登录!");
 			obj.getSession().write(s100);
 			log.info(user.getName() + "登录失败[重复登录]");
+			if (onlineSession.get(obj.getName()) == null) {
+				onlineMap.remove(obj.getName());
+			} else {
+				IoSession s = onlineSession.get(obj.getName());
+				if (!s.isConnected()) {
+					onlineMap.remove(user.getName());
+					onlineSession.remove(user.getName());
+				}
+			}
 			return null;
 		}
 		if (user != null && user.getSignature().equals(obj.getSignature())) {
@@ -204,6 +215,7 @@ public class ExecService {
 			s101.setCmdList(getCommandByUser(user));
 			obj.getSession().write(s101);
 			onlineMap.put(user.getName(), user);
+			onlineSession.put(user.getName(), obj.getSession());
 			log.info(user.getName() + "登录成功[" + obj.getSession().getId() + "]");
 		} else {
 			s100.setSucc(0);
