@@ -43,10 +43,12 @@ public class ExecServer {
 			log.info("Server Started! " + port);
 			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 				public void run() {
+					log.info("服务关闭...");
 					acceptor.unbind();
 					acceptor.dispose();
 				}
 		    }));
+			new ExecCloseThread().start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		} 

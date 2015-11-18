@@ -28,6 +28,7 @@ import exec.proto.SmsObjectC104;
 import exec.proto.SmsObjectC105;
 import exec.proto.SmsObjectS100;
 import exec.proto.SmsObjectS101;
+import exec.proto.SmsObjectS102;
 import exec.proto.SmsObjectS103;
 import exec.proto.SmsObjectS105;
 
@@ -187,15 +188,21 @@ public class ExecService {
 		if (onlineMap.get(obj.getName()) != null) {
 			s100.setSucc(0);
 			s100.setMsg("你已经登录，不可以重复登录!");
+			log.error("登录失败:" + obj.getName() 
+					+ " onlineMap size:" +  onlineMap.size() 
+					+ " onlineSession size:" + onlineSession.size());
 			obj.getSession().write(s100);
 			log.info(user.getName() + "登录失败[重复登录]");
 			if (onlineSession.get(obj.getName()) == null) {
 				onlineMap.remove(obj.getName());
 			} else {
 				IoSession s = onlineSession.get(obj.getName());
-				if (!s.isConnected()) {
-					onlineMap.remove(user.getName());
-					onlineSession.remove(user.getName());
+				if (!s.isConnected() || s.isClosing()) {
+					sessionClosed(s);
+				} else {
+					SmsObjectS102 sms102 = new SmsObjectS102();
+					sms102.setLine("测试信息");
+		        	s.write(sms102);
 				}
 			}
 			return null;
@@ -233,8 +240,8 @@ public class ExecService {
 		for (String cmd : list) {
 			cmds += " [" + cmd + "]";
 		}
-		log.info(user.getName() + "执行命令:" + cmds);
 		if (user != null) {
+			log.info(user.getName() + "执行命令:" + cmds);
 			if (threadMap.get(user.getName()) == null) {
 				String oneselfMsg = checkOneself(sms);
 				if (oneselfMsg == null) {

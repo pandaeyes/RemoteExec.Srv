@@ -39,10 +39,17 @@ public class ExecHandler extends IoHandlerAdapter {
         if (log.isWarnEnabled()) {
         	log.warn("EXCEPTION, please implement " + getClass().getName()
                     + ".exceptionCaught() for proper handling:", cause);
+        	log.error(">>" + cause.getMessage());
+        	if (cause.getMessage().indexOf("Connection reset by peer") != -1) {
+        		log.error("exceptionCaught close session:" + session.getId());
+        		ExecService.getInstance().sessionClosed(session);
+        		session.close(false);
+        	}
         }
     }
 	
     public void sessionClosed(IoSession session) throws Exception {
+    	log.info("sessionClosed:" + session.getId());
     	if (session.getAttribute("execUser") != null && session.getAttribute("execUser") instanceof ExecUser) {
     		ExecUser user = (ExecUser)session.getAttribute("execUser");
     		log.info(user.getName() + "断开链接");
